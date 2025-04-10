@@ -120,6 +120,8 @@ And check if their output matches the output in the PDF.
 # Question 5
 **Compare the results obtained from both caffe and tensorflow with ones obtained at section 3.6e.1**
 
+![Screenshot from 2025-04-10 06-54-56](https://github.com/user-attachments/assets/8bdf0318-cab8-4b87-8b1f-5dcf6d002928)
+
 When running `cd ~/Vitis-AI/demo/VART/resnet50_mt_py && python3 ./resnet50.py 8 /usr/share/vitis_ai_library/models/resnet50/resnet50.xmodel`, we obtained the output:
 ```bash
 FPS=27.65, total frames = 2880.00 , time=104.172245 seconds
