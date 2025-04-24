@@ -1,0 +1,8 @@
+{
+    "lib": "libvart-dpu-runner.so",
+    "filename": "resnet50.xmodel",
+    "kernel": [
+        "subgraph_conv1"
+    ],
+    "target": "DPUCZDX8G_ISA0_B2304_MAX_BG2"
+}
