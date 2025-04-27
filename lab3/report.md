@@ -130,7 +130,35 @@ When running `cd ~/Vitis-AI/demo/VART/resnet50_mt_py && python3 ./resnet50.py 8 
 FPS=27.65, total frames = 2880.00 , time=104.172245 seconds
 ```
 
-**TODO**: say something about the compilation
+## Compilation
+
+The models were compiled manually using the **Vitis AI Compiler**.  
+The original models (from **Caffe** and **TensorFlow**) were first downloaded from the **Xilinx AI Model Zoo** and extracted.  
+
+For our Ultra96v2 board, the DPU configuration was set up using the corresponding `arch.json` file with the target architecture **DPUCZDX8G_ISA0_B2304_MAX_BG2**.  
+
+The compilation process included:
+- **Quantization** of the models (8-bit integer precision),
+- **Operator fusion** to optimize model graph execution,
+- **Generation** of `.xmodel` files for FPGA deployment.
+
+The compiled models were:
+- `resnet50` from **Caffe**
+- `resnet_v1_50_tf` from **TensorFlow**
+
+The compilation scripts used were `compile_cf_model.sh` for Caffe models and `compile_tf_model.sh` for TensorFlow models.  
+The resulting `.xmodel` files were transferred to the Ultra96v2 board for testing.
+
+---
+
+## Results
+
+When executing the compiled ResNet-50 model using VART with the command:
+
+```bash
+cd ~/Vitis-AI/demo/VART/resnet50_mt_py
+python3 ./resnet50.py 8 /usr/share/vitis_ai_library/models/resnet50/resnet50.xmodel
+
 
 **TODO**: Compare the results obtained from both caffe and tensorflow with ones obtained at section 3.6e.1
 
