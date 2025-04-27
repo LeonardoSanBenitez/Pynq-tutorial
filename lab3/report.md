@@ -158,7 +158,7 @@ When executing the compiled ResNet-50 model using VART with the command:
 ```bash
 cd ~/Vitis-AI/demo/VART/resnet50_mt_py
 python3 ./resnet50.py 8 /usr/share/vitis_ai_library/models/resnet50/resnet50.xmodel
-
+```
 
 **TODO**: Compare the results obtained from both caffe and tensorflow with ones obtained at section 3.6e.1
 
