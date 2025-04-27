@@ -1,16 +1,16 @@
 
 # Question 1
 **Explain what is the purpose and the contents of the following files at the first (BOOT) partition of the SD card: arch.json, BOOT.BIN, boot.scr, dpu.xclbin and image.ub**
-arch.json - This file describes the hardware architecture of the DPU (AI accelerator) on your Ultra96-V2. It helps the Vitis-AI runtime understand how to talk to the DPU for running AI models efficiently. Think of it as identifying a "cheat sheet" for the system to know what hardware features are available.
+arch.json: identifies the hardware architecture of the DPU on the Ultra96-V2. It helps the Vitis-AI runtime understand how to talk to the DPU for running AI models efficiently. Think of it as identifying a "cheat sheet" for the system to know what hardware features are available.
 The content of `/media/sd-mmcblk0p1/arch.json` is just `{"fingerprint":"0x1000020F6014405"}`, which is the same fingerprint obtained at `xdputil query`
 
-BOOT.BIN - This is the first file loaded by the board and contains the FPGA bitstream (hardware configuration) and the ARM processor's bootloader (like U-Boot). It's like the "power-on" combo that wakes up both the FPGA and CPU, getting them ready to work together.
+BOOT.BIN: it's the first file loaded by the board and contains the FPGA bitstream (hardware configuration) and the ARM processor's bootloader (like U-Boot). It's like the "power-on" combo that wakes up both the FPGA and CPU, getting them ready to work together.
 
-boot.scr - A U-Boot script that sets up environment variables and boot commands before Linux starts. It's like a quick to-do list the board checks to know how to load the OS (e.g., where to find the kernel, what parameters to use).
+boot.scr: U-Boot script that sets up environment variables and boot commands before Linux starts. It's like a quick to-do list the board checks to know how to load the OS (e.g., where to find the kernel, what parameters to use, etc).
 
-dpu.xclbin - The compiled FPGA design for the DPU (AI accelerator), which configures the programmable logic to run neural networks. This is the "brain" file that turns the FPGA into a custom AI chip when the system boots.
+dpu.xclbin: compiled FPGA design for the DPU, which configures the programmable logic to run NNs. This is the "brain" file that turns the generic FPGA into a custom AI chip when the system boots.
 
-image.ub - A bundled file containing the Linux kernel (the OS core), device tree (hardware map), and initramfs (temporary root filesystem). It's like a "starter pack" for Linux—everything needed to boot before the full rootfs takes over
+image.ub: bundled file containing the Linux kernel (the OS core), device tree (hardware mapping of what is connected where), and initramfs (temporary root filesystem). It's like a "starter pack" for Linux—everything needed to boot before the full rootfs takes over
 
 Additional explanations can be found at [hackster]([url](https://www.hackster.io/AlbertaBeef/vitis-ai-1-4-flow-for-avnet-vitis-platforms-5ebc3f))
 
@@ -26,7 +26,10 @@ We can see that the content of `/media/sd-mmcblk0p2` is:
 bin  boot  dev  etc  home  lib  log_lock.pid  lost+found  media  mnt  proc  run  sbin  sys  tmp  usr  var
 ```
 
+just like a normal linux operating system
+
 # Question 3
+
 **Output of xdputil query**
 ```bash
 {
@@ -68,7 +71,7 @@ bin  boot  dev  etc  home  lib  log_lock.pid  lost+found  media  mnt  proc  run 
 }
 ```
 
-This output from xdputil query is basically a spec sheet and status report for your Ultra96-V2’s AI accelerator (DPU). It tells you there’s one DPU core running at 200 MHz with a Vitis-AI 1.4.1-compatible design, and lists the software versions (like libvart-runner.so) to make sure everything matches up. The "kernels" section dives into hardware details—like the DPU’s architecture (DPUCZDX8G_ISA0_B2304_MAX_BG2), its memory address (0xb0000000), and parallelism settings (2x load/save ops at once). If your AI models act weird, check here first—mismatched versions or wrong arch settings could be the culprit!
+This output from xdputil query is basically a spec sheet and status report for our DPU. It tells us there’s one DPU core running at 200 MHz with a Vitis-AI 1.4.1-compatible design, and lists the software versions (like libvart-runner.so) to make sure everything matches up. The "kernels" section dives into hardware details—like the DPU’s architecture (DPUCZDX8G_ISA0_B2304_MAX_BG2), its memory address (0xb0000000), and parallelism settings (2x load/save ops at once). If your AI models act weird, check here first—mismatched versions or wrong arch settings could be the culprit!
 
 After this, the device is ready for use, as can also be seen by the command `xbutil scan`:
 ```bash
@@ -127,5 +130,99 @@ When running `cd ~/Vitis-AI/demo/VART/resnet50_mt_py && python3 ./resnet50.py 8 
 FPS=27.65, total frames = 2880.00 , time=104.172245 seconds
 ```
 
+**TODO**: say something about the compilation
 
-TODO: caffe and tensorflow
+**TODO**: Compare the results obtained from both caffe and tensorflow with ones obtained at section 3.6e.1
+
+# Question 6
+
+**Test the models on the board**
+
+The model files from the last part were uploaded to git, as well as the test images. They are available in [Pynq-tutorial/lab3](https://github.com/LeonardoSanBenitez/Pynq-tutorial/tree/main/lab3) and [Pynq-tutorial/lab3/images](https://github.com/LeonardoSanBenitez/Pynq-tutorial/tree/main/lab3/images), respectively.
+
+After cloning the repository, we modified the file `~/Vitis-AI/demo/VART/resnet50_mt_py/resnet50.py` to point to the correct dataset (since the dataset path was hardcoded in the script). In a nutshell, this script does a performance test with ResNet-50 on the on a Xilinx DPU, including loading the model, preprocessing the images, running the DPU inference, and measuring FPS. The modified version of the script is available in [Pynq-tutorial/lab3/resnet_50.py](https://github.com/LeonardoSanBenitez/Pynq-tutorial/blob/main/lab3/resnet_50.py).
+
+For each of the 3 model, inference should be performed with a command like like the following:
+
+```bash
+python3 ~/Vitis-AI/demo/VART/resnet50_mt_py/resnet50.py 8 Pynq-tutorial/lab3/densebox_640_360/densebox_640_360.xmodel
+```
+
+However, we face the following error:
+
+```python
+Exception in thread Thread-1:
+Traceback (most recent call last):
+Exception in thread Thread-2:
+  File "/usr/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+Exception in thread Thread-3:
+Traceback (most recent call last):
+Exception in thread Thread-4:
+Traceback (most recent call last):
+Exception in thread Thread-5:
+  File "/usr/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+Exception in thread Thread-6:
+  File "/usr/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+Traceback (most recent call last):
+Traceback (most recent call last):
+    self.run()
+    self.run()
+  File "/usr/lib/python3.8/threading.py", line 870, in run
+Traceback (most recent call last):
+Exception in thread Thread-7:
+  File "/usr/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+  File "/usr/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+  File "/usr/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+  File "/usr/lib/python3.8/threading.py", line 870, in run
+    self.run()
+    self._target(*self._args, **self._kwargs)
+    self.run()
+Exception in thread Thread-8:
+    self.run()
+  File "/usr/lib/python3.8/threading.py", line 870, in run
+  File "/usr/lib/python3.8/threading.py", line 870, in run
+Traceback (most recent call last):
+  File "/home/root/Vitis-AI/demo/VART/resnet50_mt_py/resnet50.py", line 133, in runResnet50
+    self._target(*self._args, **self._kwargs)
+Traceback (most recent call last):
+  File "/usr/lib/python3.8/threading.py", line 870, in run
+    self.run()
+  File "/usr/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+    self._target(*self._args, **self._kwargs)
+  File "/home/root/Vitis-AI/demo/VART/resnet50_mt_py/resnet50.py", line 133, in runResnet50
+  File "/usr/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+  File "/usr/lib/python3.8/threading.py", line 870, in run
+    self._target(*self._args, **self._kwargs)
+    imageRun[j, ...] = img[(count + j) % n_of_images].reshape(input_ndim[1:])
+    imageRun[j, ...] = img[(count + j) % n_of_images].reshape(input_ndim[1:])
+  File "/home/root/Vitis-AI/demo/VART/resnet50_mt_py/resnet50.py", line 133, in runResnet50
+    imageRun[j, ...] = img[(count + j) % n_of_images].reshape(input_ndim[1:])
+    self.run()
+    self._target(*self._args, **self._kwargs)
+  File "/home/root/Vitis-AI/demo/VART/resnet50_mt_py/resnet50.py", line 133, in runResnet50
+ValueError: cannot reshape array of size 150528 into shape (360,640,3)
+ValueError: cannot reshape array of size 150528 into shape (360,640,3)
+ValueError: cannot reshape array of size 150528 into shape (360,640,3)
+  File "/home/root/Vitis-AI/demo/VART/resnet50_mt_py/resnet50.py", line 133, in runResnet50
+    self.run()
+    imageRun[j, ...] = img[(count + j) % n_of_images].reshape(input_ndim[1:])
+ValueError: cannot reshape array of size 150528 into shape (360,640,3)
+  File "/usr/lib/python3.8/threading.py", line 870, in run
+    imageRun[j, ...] = img[(count + j) % n_of_images].reshape(input_ndim[1:])
+    self._target(*self._args, **self._kwargs)
+ValueError: cannot reshape array of size 150528 into shape (360,640,3)
+  File "/usr/lib/python3.8/threading.py", line 870, in run
+  File "/home/root/Vitis-AI/demo/VART/resnet50_mt_py/resnet50.py", line 133, in runResnet50
+    self._target(*self._args, **self._kwargs)
+    imageRun[j, ...] = img[(count + j) % n_of_images].reshape(input_ndim[1:])
+  File "/home/root/Vitis-AI/demo/VART/resnet50_mt_py/resnet50.py", line 133, in runResnet50
+ValueError: cannot reshape array of size 150528 into shape (360,640,3)
+    self._target(*self._args, **self._kwargs)
+  File "/home/root/Vitis-AI/demo/VART/resnet50_mt_py/resnet50.py", line 133, in runResnet50
+    imageRun[j, ...] = img[(count + j) % n_of_images].reshape(input_ndim[1:])
+ValueError: cannot reshape array of size 150528 into shape (360,640,3)
+    imageRun[j, ...] = img[(count + j) % n_of_images].reshape(input_ndim[1:])
+ValueError: cannot reshape array of size 150528 into shape (360,640,3)
+FPS=59175.41, total frames = 2880.00 , time=0.048669 seconds
+```
+
