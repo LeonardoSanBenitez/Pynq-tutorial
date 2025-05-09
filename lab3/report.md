@@ -1,6 +1,7 @@
 
 # Question 1
 **Explain what is the purpose and the contents of the following files at the first (BOOT) partition of the SD card: arch.json, BOOT.BIN, boot.scr, dpu.xclbin and image.ub**
+
 arch.json: identifies the hardware architecture of the DPU on the Ultra96-V2. It helps the Vitis-AI runtime understand how to talk to the DPU for running AI models efficiently. Think of it as identifying a "cheat sheet" for the system to know what hardware features are available.
 The content of `/media/sd-mmcblk0p1/arch.json` is just `{"fingerprint":"0x1000020F6014405"}`, which is the same fingerprint obtained at `xdputil query`
 
@@ -31,6 +32,7 @@ just like a normal linux operating system
 # Question 3
 
 **Output of xdputil query**
+
 ```bash
 {
     "DPU IP Spec":{
@@ -74,6 +76,7 @@ just like a normal linux operating system
 This output from xdputil query is basically a spec sheet and status report for our DPU. It tells us there’s one DPU core running at 200 MHz with a Vitis-AI 1.4.1-compatible design, and lists the software versions (like libvart-runner.so) to make sure everything matches up. The "kernels" section dives into hardware details—like the DPU’s architecture (DPUCZDX8G_ISA0_B2304_MAX_BG2), its memory address (0xb0000000), and parallelism settings (2x load/save ops at once). If your AI models act weird, check here first—mismatched versions or wrong arch settings could be the culprit!
 
 After this, the device is ready for use, as can also be seen by the command `xbutil scan`:
+
 ```bash
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 System Configuration
@@ -96,7 +99,9 @@ ZOCL:           2.11.0,0dc9f505a3a910dea96166db7b5df8530b9ae38e
 
 # Question 4
 **Run the examples**
+
 We can run the examples provided by Xilinx, with the pretrained models and predownloaded data:
+
 ```bash
 cd ~/Vitis-AI/demo/VART/adas_detection && ./adas_detection ./video/adas.avi /usr/share/vitis_ai_library/models/yolov3_adas_pruned_0_9/yolov3_adas_pruned_0_9.xmodel
 
@@ -126,6 +131,7 @@ And check if their output matches the output in the PDF.
 ![Screenshot from 2025-04-10 06-54-56](https://github.com/user-attachments/assets/8bdf0318-cab8-4b87-8b1f-5dcf6d002928)
 
 When running `cd ~/Vitis-AI/demo/VART/resnet50_mt_py && python3 ./resnet50.py 8 /usr/share/vitis_ai_library/models/resnet50/resnet50.xmodel`, we obtained the output:
+
 ```bash
 FPS=27.65, total frames = 2880.00 , time=104.172245 seconds
 ```
